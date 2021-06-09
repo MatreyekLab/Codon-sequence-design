@@ -2,8 +2,8 @@
 # but still codes for the same amino acids utilizing the degeneracy of DNA
 
 ## To use this script, go to bash terminal and change directory to this file, then
-## type in 'python designCodon [sequence]'
-## For example, 'python designCodon GACGAAAAG' will print out 'GATGAGAAA'
+## type in 'python designCodon.py [sequence]'
+## For example, 'python designCodon.py GACGAAAAG' will print out 'GATGAGAAA'
 
 import sys
 
