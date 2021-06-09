@@ -3,7 +3,7 @@
 
 ## To use this script, go to bash terminal and change directory to this file, then
 ## type in 'python sangerAnalysis.py [directory]'
-## For example, 'python sangerAnalysis.py C:/Users/tiena/sangerphd' will output a csv file
+## For example, 'python sangerAnalysis.py C:/Users/tienanh/sangerphd' will output a csv file
 
 import os
 import csv
