@@ -8,14 +8,18 @@
 import os
 import csv
 import sys
+os.getcwd()
+os.chdir("/Users/tiena/OneDrive/Documents/deleted/sangerphd")
+os.getcwd()
 #os.getcwd()
-#os.chdir("/Users/tiena/OneDrive/Documents/deleted/sangerphd")
+#os.chdir(str(sys.argv[1]))
 #os.getcwd()
 
-#directory = "/Users/tiena/OneDrive/Documents/deleted/sangerphd"
-directory = sys[1]
+directory = "/Users/tiena/OneDrive/Documents/deleted/sangerphd"
+#directory = str(sys.argv[1])
 
-def Average(lst):
+# A method to extract average of data
+def average(lst):
     return sum(lst) / len(lst)
 
 # A method to extract the data from the phd files
@@ -43,12 +47,13 @@ def createCSV():
         writer = csv.writer(csv_file)
         writer.writerow(["File Name", "Average Score", "Median", "Length"])
         # Choose only phd file to be included
-        for filename in os.listdir(directory):
-            if filename.endswith("phd.1"):
-                getdata = extractScore(filename)
-                mid = len(getdata) // 2
-                res = (getdata[mid] + getdata[~mid]) / 2
-                writer.writerow([str(filename), Average(getdata), res,len(getdata)])
+        for root, dirs, files in os.walk(directory, topdown=False):
+            for filename in files:
+                if filename.endswith("phd.1"):
+                    getdata = extractScore(os.path.join(root, filename).replace("\\","/"))
+                    mid = len(getdata) // 2
+                    res = (getdata[mid] + getdata[~mid]) / 2
+                    writer.writerow([str(filename), average(getdata), res, len(getdata)])
 
 ## Creating the CSV file
 createCSV()
