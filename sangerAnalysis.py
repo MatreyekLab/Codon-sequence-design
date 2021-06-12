@@ -8,15 +8,15 @@
 import os
 import csv
 import sys
-os.getcwd()
-os.chdir("/Users/tiena/OneDrive/Documents/deleted/sangerphd")
-os.getcwd()
 #os.getcwd()
-#os.chdir(str(sys.argv[1]))
+#os.chdir("/Users/tiena/OneDrive/Documents/deleted/sangerphd")
 #os.getcwd()
+os.getcwd()
+os.chdir(str(sys.argv[1]))
+os.getcwd()
 
-directory = "/Users/tiena/OneDrive/Documents/deleted/sangerphd"
-#directory = str(sys.argv[1])
+#directory = "/Users/tiena/OneDrive/Documents/deleted/sangerphd"
+directory = str(sys.argv[1])
 
 # A method to extract average of data
 def average(lst):
