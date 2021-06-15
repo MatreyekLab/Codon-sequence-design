@@ -122,11 +122,6 @@ def R(aa):
     if aa == 'AGG': return 'CGC'
 
 
-def S(aa):
-    if aa == 'AGT': return 'AGC'
-    if aa == 'AGC': return 'AGT'
-
-
 def G(aa):
     if aa == 'GGT': return 'GGC'
     if aa == 'GGC': return 'GGA'
