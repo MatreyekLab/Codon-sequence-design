@@ -7,7 +7,7 @@
 
 import sys
 
-sequence = str(sys.argv[1])
+sequence = str(sys.argv[1]).upper()
 
 def F(aa):
     if aa == 'TTT': return 'TTC'
