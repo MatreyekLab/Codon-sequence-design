@@ -82,7 +82,7 @@ def fwdIndices():
 def createFwdIndex():
     while True:
         fwdIndex = fwdIndices()
-        if (checkIfRepeated(fwdIndex) == True) & (checkIfUsed(fwdIndex) == True):
+        if (checkIfRepeated(fwdIndex) == True) and (checkIfUsed(fwdIndex) == True):
             return fwdIndex
 
 # A method to generate a csv file containing both the forward and reverse indices
