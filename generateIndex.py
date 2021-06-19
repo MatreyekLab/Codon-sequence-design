@@ -22,11 +22,16 @@ os.getcwd()
 # The csv file contains all already used indices sequences
 csv_file = 'MatreyekLab_Illumina - Indices.csv'
 
+# Sheet ID
+sheet_id = "1tL8aaCp6qqtRCn92cJBbG-F01Oz_p-MEdSQTFA_LfEQ"
+r = "https://docs.google.com/spreadsheets/export?id={}&exportFormat=csv&gid=945877896".format(sheet_id)
+
 # Select the row "index_seq_fwd" and load the data in the panda dataframe
 # create a list alreadyUse[] that contains all the indices in the above row
 # drop (delete) the first 11 rows which only have 8-base sequences
 col_list = ["index_seq_fwd"]
-df = pd.read_csv("MatreyekLab_Illumina - Indices.csv", usecols=col_list)
+#df = pd.read_csv("MatreyekLab_Illumina - Indices.csv", usecols=col_list)
+df = pd.read_csv(r)
 df = df.drop(range(0,12))
 alreadyUse= []
 for index, row in df.iterrows():
