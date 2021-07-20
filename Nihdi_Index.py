@@ -1,4 +1,3 @@
-import os
 import csv
 
 # This python script creates a csv file that contains recombination of indexes for NGS
