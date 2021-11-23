@@ -45,7 +45,8 @@ def revIndices(fwdIndices):
         if fwdIndices[element] == "T": revIndex = revIndex + "A"
         if fwdIndices[element] == "G": revIndex = revIndex + "C"
         if fwdIndices[element] == "C": revIndex = revIndex + "G"
-    return revIndex
+    revIndex2 = revIndex[::-1]
+    return revIndex2
 
 # A method that return True if the difference in position base of two compared indices
 # is larger than or equal to 3, otherwise return False
@@ -100,6 +101,9 @@ def generateIndices(total):
             revIndex = revIndices(str(fwdIndex))
             writer.writerow([str(fwdIndex), str(revIndex)])
 
-# Modify the input to generate desired number of indices
+# Ask the user how many sequences they want
+
+output_number = input("How many indices do you want? Please write a number (eg. 4):")
 # e.g. 20 means 20 forward and reverse indices are generated
-generateIndices(4)
+
+generateIndices(int(output_number))
