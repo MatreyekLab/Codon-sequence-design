@@ -1,7 +1,10 @@
 import os
 import pandas as pd
+import numpy as np
 import random
 import csv
+from numpy import savetxt
+
 ## This python script creats a CSV file that generates random sequence for the indices used
 ## in Illuminia Sequencing. It createa a 10-base sequence that has the following features:
 ## It must be at least 3-position different from already used indices stored in the MatreyekLab_Illumina-Indices google sheet
@@ -36,6 +39,30 @@ df = df.drop(range(0,12))
 alreadyUse= []
 for index, row in df.iterrows():
     alreadyUse.append(row["index_seq_fwd"])
+    alreadyUse.append(row["index_seq_rev"])
+print(alreadyUse)
+
+## Hamming distance formula
+# https://stackoverflow.com/questions/48799955/find-the-hamming-distance-between-two-dna-strings
+def distance(str1, str2):
+    if len(str1) != len(str2):
+        raise ValueError("Strand lengths are not equal!")
+    else:
+        return sum(1 for (a, b) in zip(str1, str2) if a != b)
+
+List1 = alreadyUse
+List2 = alreadyUse
+Matrix = np.zeros((len(List1),len(List2)),dtype=np.int)
+for i in range(0,len(List1)):
+  for j in range(0,len(List2)):
+      #print(List1[i])
+      #print(List2[j])
+      print(str(i) + " x " + str(j))
+      Matrix[i,j] = distance(List1[i],List2[j])
+#print(Matrix)
+# https://machinelearningmastery.com/how-to-save-a-numpy-array-to-file-for-machine-learning/#:~:text=You%20can%20save%20your%20NumPy,file%2C%20most%20commonly%20a%20comma.
+savetxt("Output_identity_matrix.csv", Matrix, delimiter=',')
+
 
 # A method to generate the reverse index from an input forward index
 def revIndices(fwdIndices):
@@ -101,9 +128,12 @@ def generateIndices(total):
             revIndex = revIndices(str(fwdIndex))
             writer.writerow([str(fwdIndex), str(revIndex)])
 
+
 # Ask the user how many sequences they want
 
 output_number = input("How many indices do you want? Please write a number (eg. 4):")
 # e.g. 20 means 20 forward and reverse indices are generated
 
 generateIndices(int(output_number))
+
+

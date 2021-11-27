@@ -1,0 +1,37 @@
+---
+title: "Identity_matrix"
+author: "Kenneth Matreyek"
+date: "11/25/2021"
+output: html_document
+---
+
+```{r}
+library(reshape)
+library(tidyverse)
+
+rbd_dist_matrix <- read.delim(file = "Output_identity_matrix.csv", header = F, stringsAsFactors = F, sep = ",")
+
+rbd_dist_matrix_hclust <- hclust(as.dist(rbd_dist_matrix, diag = TRUE))
+
+rbd_dist_matrix2 <- rbd_dist_matrix
+rbd_dist_matrix2$species <- rownames(rbd_dist_matrix2)
+
+rbd_dist_melted <- melt(rbd_dist_matrix2, id = "species")
+rbd_dist_melted$variable <- as.character(rbd_dist_melted$variable)
+
+#rbd_dist_melted$species <- factor(rbd_dist_melted$species, levels = rbd_dist_matrix_hclust$labels)
+#rbd_dist_melted$variable <- factor(rbd_dist_melted$variable, levels = rbd_dist_matrix_hclust$labels)
+
+rbd_identity_matrix_plot <- ggplot() + theme_bw() +
+  theme(axis.text = element_text(size = 8), axis.text.x = element_text(angle = -90, hjust = 0, vjust = 0.5)) +
+  labs(x = NULL, y = NULL, fill = NULL) +
+  scale_fill_continuous(low = "white", high = "black") +
+  geom_tile(data = rbd_dist_melted, aes(x = species, y = variable, fill = value)) +
+  #geom_text(data = rbd_dist_melted %>% filter(species != "H.sapiens" & variable != "H.sapiens" & value <= 40), aes(x = species, y = variable, label = value), size = 2) +
+  #geom_text(data = rbd_dist_melted %>% filter(species != "H.sapiens" & variable != "H.sapiens" & value >= 40), aes(x = species, y = variable, label = value), size = 2, color = "grey70") +
+  NULL
+ggsave(file = "Identity_matrix_plot.pdf", rbd_identity_matrix_plot, height = 5.3, width = 6)
+rbd_identity_matrix_plot
+
+```
+
