@@ -1,1 +1,1 @@
-This respiratory contains all python codes created to design DNA sequences on benchling and other sequence analysis
+This repository contains an assortment of scripts for working with DNA sequences in the Matreyek Lab
