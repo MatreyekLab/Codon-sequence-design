@@ -1,5 +1,4 @@
 import os
-import codecs
 import pandas as pd
 import numpy as np
 import random
@@ -20,6 +19,11 @@ from numpy import savetxt
 
 # Set up the pathway where the csv file will be created
 os.getcwd()
+#os.chdir("/Users/tiena/OneDrive/Documents/Java,Pymol,Rproj/Codon-sequence-design")
+#os.getcwd()
+
+# The csv file contains all already used indices sequences
+#csv_file = 'MatreyekLab_Illumina - Indices.csv'
 
 # Sheet ID
 sheet_id = "1tL8aaCp6qqtRCn92cJBbG-F01Oz_p-MEdSQTFA_LfEQ"
@@ -28,20 +32,15 @@ r = "https://docs.google.com/spreadsheets/export?id={}&exportFormat=csv&gid=9458
 # Select the row "index_seq_fwd" and load the data in the panda dataframe
 # create a list alreadyUse[] that contains all the indices in the above row
 # drop (delete) the first 11 rows which only have 8-base sequences
-#col_list = ["index_seq_fwd"]
+col_list = ["index_seq_fwd"]
 #df = pd.read_csv("MatreyekLab_Illumina - Indices.csv", usecols=col_list)
 df = pd.read_csv(r)
-df = df.drop(range(0,12)) ##These are old primers that have 8nt barcodes that we'll no longer use
-primer_name = []
+df = df.drop(range(0,12))
 alreadyUse= []
 for index, row in df.iterrows():
-    primer_name.append(row["primer_name"])
     alreadyUse.append(row["index_seq_fwd"])
-    primer_name.append(row["primer_name"])
     alreadyUse.append(row["index_seq_rev"])
 print(alreadyUse)
-
-## Making the identity matrix
 
 ## Hamming distance formula
 # https://stackoverflow.com/questions/48799955/find-the-hamming-distance-between-two-dna-strings
@@ -63,14 +62,6 @@ for i in range(0,len(List1)):
 #print(Matrix)
 # https://machinelearningmastery.com/how-to-save-a-numpy-array-to-file-for-machine-learning/#:~:text=You%20can%20save%20your%20NumPy,file%2C%20most%20commonly%20a%20comma.
 savetxt("Output_identity_matrix.csv", Matrix, delimiter=',')
-
-## Printing a file that notes what sequence is associated with which index in the identity matrix
-outfilename = "Output_identity_list.tsv"
-outfile = codecs.open(outfilename, "w", "utf-8", "replace")
-
-for x in range(0,len(alreadyUse)):
-    outfile.write("{}\t{}\t{}\n".format(x+1,primer_name[x],alreadyUse[x]))
-outfile.close()
 
 
 # A method to generate the reverse index from an input forward index

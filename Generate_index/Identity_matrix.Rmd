@@ -9,29 +9,45 @@ output: html_document
 library(reshape)
 library(tidyverse)
 
-rbd_dist_matrix <- read.delim(file = "Output_identity_matrix.csv", header = F, stringsAsFactors = F, sep = ",")
+dist_matrix <- read.delim(file = "Output_identity_matrix.csv", header = F, stringsAsFactors = F, sep = ",")
 
-rbd_dist_matrix_hclust <- hclust(as.dist(rbd_dist_matrix, diag = TRUE))
+dist_matrix_hclust <- hclust(as.dist(dist_matrix, diag = TRUE))
 
-rbd_dist_matrix2 <- rbd_dist_matrix
-rbd_dist_matrix2$species <- rownames(rbd_dist_matrix2)
+dist_matrix2 <- dist_matrix
+dist_matrix2$identifier <- rownames(dist_matrix2)
 
-rbd_dist_melted <- melt(rbd_dist_matrix2, id = "species")
-rbd_dist_melted$variable <- as.character(rbd_dist_melted$variable)
+dist_melted <- melt(dist_matrix2, id = "identifier")
+dist_melted$variable <- as.character(dist_melted$variable)
 
-#rbd_dist_melted$species <- factor(rbd_dist_melted$species, levels = rbd_dist_matrix_hclust$labels)
-#rbd_dist_melted$variable <- factor(rbd_dist_melted$variable, levels = rbd_dist_matrix_hclust$labels)
 
-rbd_identity_matrix_plot <- ggplot() + theme_bw() +
+identity_matrix_plot <- ggplot() + theme_bw() +
   theme(axis.text = element_text(size = 8), axis.text.x = element_text(angle = -90, hjust = 0, vjust = 0.5)) +
   labs(x = NULL, y = NULL, fill = NULL) +
   scale_fill_continuous(low = "white", high = "black") +
-  geom_tile(data = rbd_dist_melted, aes(x = species, y = variable, fill = value)) +
-  #geom_text(data = rbd_dist_melted %>% filter(species != "H.sapiens" & variable != "H.sapiens" & value <= 40), aes(x = species, y = variable, label = value), size = 2) +
-  #geom_text(data = rbd_dist_melted %>% filter(species != "H.sapiens" & variable != "H.sapiens" & value >= 40), aes(x = species, y = variable, label = value), size = 2, color = "grey70") +
+  geom_tile(data = dist_melted, aes(x = identifier, y = variable, fill = value)) +
   NULL
-ggsave(file = "Identity_matrix_plot.pdf", rbd_identity_matrix_plot, height = 5.3, width = 6)
-rbd_identity_matrix_plot
+ggsave(file = "Identity_matrix_plot.pdf", identity_matrix_plot, height = 5.3*1.5, width = 6*1.5)
+identity_matrix_plot
+
+dist_identicals_removed <- dist_melted %>% mutate(variable2 = gsub("[^0-9]","",variable)) %>% filter(identifier != variable2)
+
+identity_histogram <- ggplot() + theme_bw() +
+  theme(axis.text = element_text(size = 8), axis.text.x = element_text(angle = -90, hjust = 0, vjust = 0.5),
+        panel.grid.minor = element_blank()) +
+  scale_x_continuous(limits = c(0,10), breaks = seq(0,10)) +
+  geom_histogram(data = dist_identicals_removed, aes(x = value), binwidth = 1, fill = "grey90", color = "black")
+identity_histogram
+ggsave(file = "Identity_histogram.png", height = 3, width = 5)
+
+
+## Finding super problematic conflicting barcodes
+conflicted <- dist_melted %>% filter(value == 0) %>% mutate(variable2 = gsub("V","",variable)) %>% filter(identifier != variable2)
+
+## Importing the primer names and sequences
+sample_labels <- read.delim(file = "Output_identity_list.tsv", header = F, stringsAsFactors = F, sep = "\t")
+colnames(sample_labels) <- c("identifier","name","sequence")
+
+conflicted2 <- merge(conflicted, sample_labels, by = "identifier")
 
 ```
 
