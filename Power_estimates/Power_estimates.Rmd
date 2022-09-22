@@ -1,0 +1,208 @@
+---
+title: "Power estimates"
+author: "Kenneth Matreyek"
+date: '2022-09-20'
+output: html_document
+---
+
+```{r Import libraries}
+library(tidyverse)
+```
+
+
+```{r SORT-seq data}
+
+rm(list = ls())
+ 
+## values range from 0 to 1
+## median standard deviation is 0.15 (From ACE2 Kozak experiments)
+
+## GCCACCATG is 0.6625684
+## TTATGGATG is 0.3269816
+
+high_val <- 0.6625684
+low_val <- 0.3269816
+med_val <- mean(c(low_val,high_val))
+sd_val <- 0.15
+
+high_dist <- rnorm(mean = high_val, sd = sd_val, n = 100000)
+low_dist <- rnorm(mean = low_val, sd = sd_val, n = 100000)
+med_dist <- rnorm(mean = med_val, sd = sd_val, n = 100000)
+
+Sortseq_example_distributions <- ggplot() + theme_bw() + labs(x = "Sortseq score", y = "Density of measured population", title = "Black is high Kozak, Red is low Kozak, Blue is medium Kozak") +
+  geom_density(aes(x = high_dist)) + geom_density(aes(x = low_dist), color = "red") + geom_density(aes(x = med_dist), color = "blue")
+Sortseq_example_distributions
+ggsave( file = "Plots/Sortseq_example_distributions.pdf", Sortseq_example_distributions, height = 4, width = 6)
+
+```
+
+```{r Central limit theorem example}
+
+max_replicates <- 200
+
+simulations_index_vector <- c()
+simulations_replicates_vector <- c()
+simulations_mean_high_diff_vector <- c()
+
+simulations = 10
+for(y in 1:simulations){
+  high_sampling_vector <- sample(high_dist, max_replicates, replace = T)
+  index_high <- c()
+  mean_high <- c()
+  sd_high <- c()
+  for(x in 1:max_replicates){
+    mean_high <- c(mean_high, mean(high_sampling_vector[1:x]))
+    simulations_index_vector <- c(simulations_index_vector,y)
+    simulations_replicates_vector <- c(simulations_replicates_vector, x)
+  }
+  simulations_mean_high_diff_vector <- c(simulations_mean_high_diff_vector, mean_high - mean_high[max_replicates])
+}
+
+clt_dataframe <- data.frame("simulation" = simulations_index_vector,"replicate" = simulations_replicates_vector, "difference" = simulations_mean_high_diff_vector)
+
+Central_limit_theorem_example <- ggplot() + theme_bw() + theme(legend.position = "none") + 
+  labs(x = "Replicate number", y = "Difference from mean value\nat 200 replicates", title = "Each color denotes 1 of 10 simulated times") +
+  geom_point(data = clt_dataframe, aes(x = replicate, y = difference, color = simulation), alpha = 0.5)
+Central_limit_theorem_example
+ggsave( file = "Plots/Central_limit_theorem_example.pdf", Central_limit_theorem_example, height = 4, width = 6)
+```
+
+```{r  Showing how SORT-seq scores stabilize over replicates due to CLT}
+
+low_effectsize <- (high_val - low_val) / sd_val
+med_effectsize <- (high_val - med_val) / sd_val
+
+max_replicates <- 20
+high_sampling_vector <- sample(high_dist, max_replicates, replace = T)
+low_sampling_vector <- sample(low_dist, max_replicates, replace = T)
+med_sampling_vector <- sample(med_dist, max_replicates, replace = T)
+
+simulations_sim_vector <- c()
+simulations_replicates_vector <- c()
+simulations_mean_high_diff_vector <- c()
+simulations_sd_high_diff_vector <- c()
+simulations_mean_low_diff_vector <- c()
+simulations_sd_low_diff_vector <- c()
+simulations_mean_med_diff_vector <- c()
+simulations_sd_med_diff_vector <- c()
+
+simulations = 100
+for(y in 1:simulations){
+  high_sampling_vector <- sample(high_dist, max_replicates, replace = T)
+  low_sampling_vector <- sample(low_dist, max_replicates, replace = T)
+  med_sampling_vector <- sample(med_dist, max_replicates, replace = T)
+  sims_counter <- c()
+  rep_counter <- c()
+  mean_high <- c()
+  sd_high <- c()
+  mean_low <- c()
+  sd_low <- c()
+  mean_med <- c()
+  sd_med <- c()
+  for(x in 1:max_replicates){
+    mean_high <- c(mean_high, mean(high_sampling_vector[1:x]))
+    sd_high <- c(sd_high, sd(high_sampling_vector[1:x], na.rm = T))
+    mean_low <- c(mean_low, mean(low_sampling_vector[1:x]))
+    sd_low <- c(sd_low, sd(low_sampling_vector[1:x], na.rm = T))
+    mean_med <- c(mean_med, mean(med_sampling_vector[1:x]))
+    sd_med <- c(sd_med, sd(med_sampling_vector[1:x], na.rm = T))
+    rep_counter <- c(rep_counter,x)
+    sims_counter <- c(sims_counter,y)
+  }
+  simulations_sim_vector <- c(simulations_sim_vector, sims_counter)
+  simulations_replicates_vector <- c(simulations_replicates_vector, rep_counter)
+  simulations_mean_high_diff_vector <- c(simulations_mean_high_diff_vector,mean_high)
+  simulations_sd_high_diff_vector <- c(simulations_sd_high_diff_vector,sd_high)
+  simulations_mean_low_diff_vector <- c(simulations_mean_low_diff_vector,mean_low)
+  simulations_sd_low_diff_vector <- c(simulations_sd_low_diff_vector,sd_low)
+  simulations_mean_med_diff_vector <- c(simulations_mean_med_diff_vector,mean_med)
+  simulations_sd_med_diff_vector <- c(simulations_sd_med_diff_vector,sd_med)
+}
+
+Simulation_dataframe <- data.frame("sims" = simulations_sim_vector,"replicates" = simulations_replicates_vector,"mean_high" = simulations_mean_high_diff_vector,"sd_high" = simulations_sd_high_diff_vector, "mean_low" = simulations_mean_low_diff_vector, "sd_low" = simulations_sd_low_diff_vector, "mean_med" = simulations_mean_med_diff_vector, "sd_med" = simulations_sd_med_diff_vector)
+
+Low_vs_high_mean_estimates_by_replicates <- ggplot() + theme_bw() + labs(x = "Number of replicates measurements", y = "Mean SORT-seq score", title = "Black is high Kozak; Red is low Kozak") +
+  geom_jitter(data = Simulation_dataframe, aes(x = replicates, y = mean_low), alpha = 0.1, color = "red", width = 0.4, height = 0) +
+  geom_jitter(data = Simulation_dataframe, aes(x = replicates, y = mean_high), alpha = 0.1, width = 0.4, height = 0) +
+  NULL
+Low_vs_high_mean_estimates_by_replicates
+ggsave( file = "Plots/Low_vs_high_mean_estimates_by_replicates.pdf", Low_vs_high_mean_estimates_by_replicates, height = 4, width = 6)
+
+Med_vs_high_mean_estimates_by_replicates <- ggplot() + theme_bw() + labs(x = "Number of replicates measurements", y = "Mean SORT-seq score", title = "Black is high Kozak; Blue is med Kozak") +
+  geom_jitter(data = Simulation_dataframe, aes(x = replicates, y = mean_med), alpha = 0.1, color = "blue", width = 0.4, height = 0) +
+  geom_jitter(data = Simulation_dataframe, aes(x = replicates, y = mean_high), alpha = 0.1, width = 0.4, height = 0) +
+  NULL
+Med_vs_high_mean_estimates_by_replicates
+ggsave( file = "Plots/Med_vs_high_mean_estimates_by_replicates.pdf", Med_vs_high_mean_estimates_by_replicates, height = 4, width = 6)
+```
+
+
+```{r Simulating the sort-seq process}
+
+replicate_n_vector <- seq(2,7)
+multiverse_number <- 20000 ## Large but not crazy number
+
+multiverse_counter <- c()
+multiverse_results_n <- c()
+multiverse_results_low <- c()
+multiverse_results_med <- c()
+
+for( y in 1:multiverse_number){
+  replicate_results_n <- c()
+  replicate_results_low <- c()
+  replicate_results_med <- c()
+  for(x in replicate_n_vector){
+    high <- mean(sample(high_dist, x, replace = T))
+    low <- mean(sample(low_dist, x), replace = T)
+    med <- mean(sample(med_dist, x), replace = T)
+    result_low <- high - low
+    result_med <- high - med
+    replicate_results_n <- c(replicate_results_n, x)
+    replicate_results_low <- c(replicate_results_low,result_low)
+    replicate_results_med <- c(replicate_results_med,result_med)
+  }
+  replicate_date_frame <- data.frame("replicates" = replicate_results_n, "low" = replicate_results_low, "med" = replicate_results_med)
+  multiverse_counter <- c(multiverse_counter, y)
+  multiverse_results_n <- c(multiverse_results_n,replicate_results_n)
+  multiverse_results_low <- c(multiverse_results_low,replicate_results_low)
+  multiverse_results_med <- c(multiverse_results_med,replicate_results_med)
+}
+multiverse_date_frame <- data.frame("multiverse_number" = multiverse_counter,"replicate" = multiverse_results_n, "low" = multiverse_results_low, "med" = multiverse_results_med)
+
+multiverse_date_frame$low_pos <- as.numeric(multiverse_date_frame$low > 0)
+multiverse_date_frame$med_pos <- as.numeric(multiverse_date_frame$med > 0)
+
+multiverse_date_frame_summary <- multiverse_date_frame %>% group_by(replicate) %>% summarize(low_pct = sum(low_pos), med_pct = sum(med_pos)) %>% mutate(low_pct = low_pct / multiverse_number, med_pct = med_pct / multiverse_number)
+
+variant_ranges <- c(100,300,1000,3000,10000,30000,100000)
+  
+variant_results_variant_num <- c()
+variant_results_replicate_num <- c()
+variant_results_low_miscalled <- c()
+variant_results_med_miscalled <- c()
+
+for(z in variant_ranges){
+  for(w in 1:nrow(multiverse_date_frame_summary)){
+    low_correct <- sample(x = c(0,1), size = z, prob = c((1-multiverse_date_frame_summary$low_pct[w]),multiverse_date_frame_summary$low_pct[w]), replace = T)
+    variant_results_low_miscalled <- c(variant_results_low_miscalled,z - sum(low_correct))
+    med_correct <- sample(x = c(0,1), size = z, prob = c((1-multiverse_date_frame_summary$low_pct[w]),multiverse_date_frame_summary$med_pct[w]), replace = T)
+    variant_results_med_miscalled <- c(variant_results_med_miscalled,z - sum(med_correct))
+    variant_results_variant_num <- c(variant_results_variant_num, z)
+    variant_results_replicate_num <- c(variant_results_replicate_num, multiverse_date_frame_summary$replicate[w])
+  }
+}
+
+variant_ranges_date_frame <- data.frame("variants" = variant_results_variant_num, "replicates" = variant_results_replicate_num, "low_miscall" = variant_results_low_miscalled, "med_miscall" = variant_results_med_miscalled)
+variant_ranges_date_frame$variants <- as.factor(variant_ranges_date_frame$variants)
+
+Sortseq_variants_replicates_plot <- ggplot() + 
+  theme(panel.grid.major.x = element_blank(), panel.grid.minor = element_blank()) + 
+  labs(x = "Number of replicate experiments", y = "Number of variants being tested", title = "Number of incorrectly called variants\n(blue is low scores, red is medium scores)") + 
+  geom_text(data = variant_ranges_date_frame, aes(x = replicates, y = variants, label = low_miscall), nudge_y = 0.2, color = "blue") +
+  geom_text(data = variant_ranges_date_frame, aes(x = replicates, y = variants, label = med_miscall), nudge_y = -0.2, color = "red")
+Sortseq_variants_replicates_plot
+ggsave(file = "Plots/Sortseq_variants_replicates_plot.pdf", Sortseq_variants_replicates_plot, height = 4, width = 5)
+
+```
+
+
