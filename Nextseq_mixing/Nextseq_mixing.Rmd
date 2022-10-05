@@ -1,0 +1,69 @@
+---
+title: "Nextseq_mixing"
+author: "Kenneth Matreyek"
+date: '2022-10-05'
+output: html_document
+---
+
+
+```{r Import packages}
+rm(list = ls())
+library(tidyverse)
+library(patchwork)
+library(googlesheets4)
+set.seed(1234567)
+theme_set(theme_bw())
+theme_update(legend.title = element_blank())
+```
+
+```{r Import data}
+
+samples <- read_sheet("https://docs.google.com/spreadsheets/d/1_JNV3crx33WMexKpFgCle54Ftxx1pqIQAT00_gy120U/edit?usp=sharing", sheet = "NextSeq3") %>% mutate(concentration = as.numeric(as.character(concentration)))
+
+ggplot() + geom_histogram(data = samples, aes(x = concentration), binwidth = 5,  fill = "grey50", color = "black") + 
+  facet_grid(rows = vars(amp_group)) + geom_vline(xintercept = c(10,40), linetype = 2, alpha = 0.4)
+
+
+amp1_set1 <- samples %>% filter(amp_group == 1 & concentration < 10)
+amp1_set2 <- samples %>% filter(amp_group == 1 & concentration > 10 & concentration < 40)
+amp1_set3 <- samples %>% filter(amp_group == 1 & concentration > 40)
+amp2 <- samples %>% filter(amp_group == 2)
+
+
+amp1_set1$dil_ng <- 13
+amp1_set1$dil_vol <- round(amp1_set1$dil_ng / amp1_set1$concentration,2)
+amp1_set1$mix_conc <- sum(amp1_set1$dil_ng) / sum(amp1_set1$dil_vol)
+
+amp1_set2$dil_ng <- 50
+amp1_set2$dil_vol <- round(amp1_set2$dil_ng / amp1_set2$concentration,2)
+amp1_set2$mix_conc <- sum(amp1_set2$dil_ng) / sum(amp1_set2$dil_vol)
+
+amp1_set3$dil_ng <- 100
+amp1_set3$dil_vol <- round(amp1_set3$dil_ng / amp1_set3$concentration,2)
+amp1_set3$mix_conc <- sum(amp1_set3$dil_ng) / sum(amp1_set3$dil_vol)
+
+amp1_mix_table <- data.frame("sample" = c("amp1_set1","amp1_set2","amp1_set3"),
+                             "conc" = c(sum(amp1_set1$dil_ng) / sum(amp1_set1$dil_vol),
+                                        sum(amp1_set2$dil_ng) / sum(amp1_set2$dil_vol),
+                                        sum(amp1_set3$dil_ng) / sum(amp1_set3$dil_vol)),
+                             "vol" = c(sum(amp1_set1$dil_vol),
+                                       sum(amp1_set2$dil_vol),
+                                       sum(amp1_set3$dil_vol)))
+
+amp1_mix_volumes <- c(17,3.02,1.04)
+
+amp1_mix_table$mix_vol <- amp1_mix_volumes
+
+
+
+total_amp1_volume <- sum(amp1_mix_table$mix_vol)
+
+paste("The total volume of the amp1 mix is:",round(total_amp1_volume,2))
+
+paste("The amp1 set1 final conc is:",round(amp1_mix_table$conc[1] * amp1_mix_table$mix_vol[1] / total_amp1_volume,2))
+paste("The amp1 set2 final conc is:",round(amp1_mix_table$conc[2] * amp1_mix_table$mix_vol[2] / total_amp1_volume,2))
+paste("The amp1 set3 final conc is:",round(amp1_mix_table$conc[3] * amp1_mix_table$mix_vol[3] / total_amp1_volume,2))
+
+```
+
+

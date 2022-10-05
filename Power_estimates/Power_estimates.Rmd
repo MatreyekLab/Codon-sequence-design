@@ -197,9 +197,9 @@ variant_ranges_date_frame$variants <- as.factor(variant_ranges_date_frame$varian
 
 Sortseq_variants_replicates_plot <- ggplot() + 
   theme(panel.grid.major.x = element_blank(), panel.grid.minor = element_blank()) + 
-  labs(x = "Number of replicate experiments", y = "Number of variants being tested", title = "Number of incorrectly called variants\n(blue is low scores, red is medium scores)") + 
-  geom_text(data = variant_ranges_date_frame, aes(x = replicates, y = variants, label = low_miscall), nudge_y = 0.2, color = "blue") +
-  geom_text(data = variant_ranges_date_frame, aes(x = replicates, y = variants, label = med_miscall), nudge_y = -0.2, color = "red")
+  labs(x = "Number of replicate experiments", y = "Number of variants being tested", title = "Number of incorrectly called variants\n(red is low scores, blue is medium scores)") + 
+  geom_text(data = variant_ranges_date_frame, aes(x = replicates, y = variants, label = low_miscall), nudge_y = 0.2, color = "red") +
+  geom_text(data = variant_ranges_date_frame, aes(x = replicates, y = variants, label = med_miscall), nudge_y = -0.2, color = "blue")
 Sortseq_variants_replicates_plot
 ggsave(file = "Plots/Sortseq_variants_replicates_plot.pdf", Sortseq_variants_replicates_plot, height = 4, width = 5)
 
