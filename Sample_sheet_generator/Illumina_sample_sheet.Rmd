@@ -1,0 +1,22 @@
+---
+title: "Illumina_sample_sheet"
+author: "Kenneth Matreyek"
+date: "9/3/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+```
+
+```{r Illumina sample sheet}
+sample_sheet <- read.csv(file = "Nextseq3_Output_samplesheet.csv", header = T, stringsAsFactors = F)
+
+sample_sheet$combined_index <- paste(sample_sheet$i7.Index.Barcode,sample_sheet$i5.Index.Barcode,sep="_")
+
+table(sample_sheet$combined_index)
+
+length(unique(sample_sheet$combined_index))
+
+unique(sample_sheet$Sample.Name)
+```
