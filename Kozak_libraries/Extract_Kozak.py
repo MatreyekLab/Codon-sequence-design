@@ -53,14 +53,14 @@ complement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}
 
 for x in range(0,len(sequence_list)):
 	temp_sequence = str(sequence_list[x])
-	temp_index = temp_sequence.find("CAGATTATACCGCAACTACAC")  ## Newer Plasmids: CAGATTATACCGCAACTACAC   TP53: CGCAACTGCTAGCACACGCAT
+	temp_index = temp_sequence.find("CAGATTATACCGCAACTACAC")  ## Newer Plasmids: CAGATTATACCGCAACTACAC  TP53: CGCAACTGCTAGCACACGCAT  ACE2: CAGATTATACCGCAACTACAC  ALK: CAGATTATACCGCAACTACAC
 	potential_kozak = temp_sequence[(temp_index+21):(temp_index+30)]
 	if potential_kozak[6:9] == "ATG":
 		read_class.append("Kozak")
 		kozak_sequence.append(potential_kozak[0:6])
 	else:
 		reverse_complement = "".join(complement.get(base, base) for base in reversed(temp_sequence))
-		temp_index2 = reverse_complement.find("CAGATTATACCGCAACTACAC")  ## Newer Plasmids: CAGATTATACCGCAACTACAC    TP53: CGCAACTGCTAGCACACGCAT
+		temp_index2 = reverse_complement.find("CAGATTATACCGCAACTACAC")  ## Newer Plasmids: CAGATTATACCGCAACTACAC   TP53: CGCAACTGCTAGCACACGCAT  ACE2: CAGATTATACCGCAACTACAC  ALK: CAGATTATACCGCAACTACAC
 		potential_kozak2 = reverse_complement[(temp_index2+21):(temp_index2+30)]
 		print(potential_kozak2)
 		if potential_kozak2[6:9] == "ATG":
