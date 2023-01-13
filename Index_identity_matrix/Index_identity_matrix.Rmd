@@ -1,0 +1,52 @@
+---
+title: "Index_identity_matrix"
+author: "Kenneth Matreyek"
+date: "7/31/2021"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+
+rm(list = ls())
+library(tidyverse)
+library(googlesheets4)
+if(!require(scales)){install.packages("scales")}
+library(scales)
+
+```
+
+```{r}
+indices <- read_sheet("https://docs.google.com/spreadsheets/d/1tL8aaCp6qqtRCn92cJBbG-F01Oz_p-MEdSQTFA_LfEQ/edit?usp=sharing", sheet = "Indices") %>% filter(index_n == 10) #col_types = "cccdccccccc"
+
+full_index_list <- data.frame("seq" = c(indices$index_seq_fwd, indices$index_seq_rev))
+
+full_index_list2 <- data.frame("seq1" = rep(full_index_list$seq,nrow(full_index_list)),
+                               "seq2" = rep(full_index_list$seq, each = nrow(full_index_list)))
+
+full_index_list2$identity <- 0
+
+for(x in 1:nrow(full_index_list2)){
+  seq1 <- full_index_list2$seq1[x]
+  seq2 <- full_index_list2$seq2[x]
+  identity = 0
+  for(y in 1:10){
+    letter1 <- substr(seq1,y,y)
+    letter2 <- substr(seq2,y,y)
+    if(letter1 == letter2){identity <- identity + 1}
+  }
+  full_index_list2$identity[x] <- identity
+}
+
+Index_identity_matrix <- ggplot() + theme_bw(base_family="Courier") + 
+  theme(axis.text.x.bottom = element_text(angle = -90, hjust = 0, vjust = 0.5)) + 
+  labs(x = NULL, y = NULL, fill = "NT Identity") +
+  scale_fill_gradientn(colours = c("white","blue","red"), values = rescale(c(0,8,10))) +
+  geom_tile(data = full_index_list2, aes(x = seq1, y = seq2, fill = identity))
+Index_identity_matrix
+ggsave(file = "Index_identity_matrix.pdf", height = 8, width = 10)
+ggsave(file = "Index_identity_matrix.png", height = 8, width = 10)
+ggsave(file = "/Users/kmatreyek/Dropbox/Website/Plots/Index_identity_matrix.png", height = 8, width = 10)
+
+```
+
