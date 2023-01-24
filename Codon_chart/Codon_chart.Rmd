@@ -1,0 +1,151 @@
+---
+title: "Codon_chart"
+author: "Kenneth Matreyek"
+date: "2023-01-22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+```
+```{r}
+# https://www.kazusa.or.jp/codon/cgi-bin/showcodon.cgi?species=9606
+human <- read.csv(file = "Human_codon_freq.csv", header = F)
+colnames(human) <- c("codon","per_thousand","number")
+human$codon <- gsub("U","T",human$codon)
+key <- read.csv(file = "Amino_acid_codon_key.csv")
+
+human2 <- merge(human, key, by = "codon") %>% arrange(desc(number))
+
+human2$per <- human2$per_thousand/1000
+
+ggplot() + theme_bw() + scale_x_log10() + labs(x = "Fraction of all codons observed", y = "Count") + 
+  geom_histogram(data = human2, aes(x = per))
+
+human2_aa <- human2 %>% group_by(one) %>% summarize(codon_number = sum(number)) %>% arrange(desc(codon_number))
+human2_aa$frac <- human2_aa$codon_number / sum(human2_aa$codon_number)
+human2_aa$index <- row.names(human2_aa)
+
+ggplot() + theme_bw() + scale_x_log10() + labs(x = "Fraction of all codons observed", y = "Count") + 
+  geom_histogram(data = human2_aa, aes(x = frac))
+
+human2_aa$one <- factor(human2_aa$one, levels = human2_aa$one)
+
+Total_count_by_aa_graph <- ggplot() + theme_bw() + theme(panel.grid.major.x = element_blank()) + 
+  labs(x = "Amino acid", y = "Fraction of all codons observed") + 
+  geom_bar(data = human2_aa, aes(x = one, y = frac), stat = "identity", color = "black",fill = "grey70")
+Total_count_by_aa_graph
+ggsave(file = "Plots/Total_count_by_aa_graph.pdf", Total_count_by_aa_graph, height = 3, width = 5)
+
+human2_aa2 <- human2 %>% group_by(one) %>% tally() %>% arrange(desc(n))
+
+human2_aa2$one <- factor(human2_aa2$one, levels = human2_aa2$one)
+
+Codons_per_aa_graph <- ggplot() + theme_bw() + theme(panel.grid.major.x = element_blank()) + 
+  labs(x = "Amino acid", y = "Number of codons") + 
+  geom_bar(data = human2_aa2, aes(x = one, y = n), stat = "identity", color = "black",fill = "grey70")
+Codons_per_aa_graph
+ggsave(file = "Plots/Codons_per_aa_graph.pdf", Codons_per_aa_graph, height = 3, width = 5)
+
+## Make a list of highest freq codons
+
+all_aa = unique(human2_aa2$one)
+
+all_aa_df <- data.frame("one" = all_aa, "codon" = NA, "freq" = NA, "frac_of_aa" = NA)
+
+for(x in 1:nrow(all_aa_df)){
+  temp_aa <- all_aa_df$one[x]
+  temp_subset <- subset(human2, one == temp_aa)
+  all_aa_df$codon[x] <- temp_subset$codon[1]
+  all_aa_df$freq[x] <- temp_subset$per[1]
+  all_aa_df$frac_of_aa[x] <- temp_subset$per[1] / sum(temp_subset$per)
+}
+
+all_aa_df <- all_aa_df %>% arrange(desc(freq))
+
+all_aa_df$one <- factor(all_aa_df$one, levels = all_aa_df$one)
+
+Codon_optimized_graph <- ggplot() + theme_bw() + theme(panel.grid.major.x = element_blank()) + 
+  scale_y_continuous(limits = c(0,0.046)) +
+  labs(x = "Amino acid", y = "Frequency of codon") + 
+  geom_point(data = all_aa_df, aes(x = one, y = freq), color = "black",fill = "grey70") +
+  geom_text(data = all_aa_df, aes(x = one, y = freq + 0.001, label = codon), hjust = 0, vjust = 0.5, angle = 90)
+Codon_optimized_graph
+ggsave(file = "Plots/Codon_optimized_graph.pdf", Codon_optimized_graph, height = 3, width = 5)
+
+## Now making sure GC content isn't too crazy
+
+all_aa_df2 <- data.frame("one" = all_aa, "codon" = NA, "freq" = NA, "frac_of_aa" = NA)
+
+for(x in 1:nrow(all_aa_df2)){
+  temp_aa <- all_aa_df2$one[x]
+  temp_subset <- subset(human2, one == temp_aa)
+  all_aa_df2$codon[x] <- temp_subset$codon[1]
+  all_aa_df2$freq[x] <- temp_subset$per[1]
+  all_aa_df2$frac_of_aa[x] <- temp_subset$per[1] / sum(temp_subset$per)
+  if(gsub("[GC]","",temp_subset$codon[1]) == "" & nrow(temp_subset) != 1){
+    all_aa_df2$codon[x] <- temp_subset$codon[2]
+    all_aa_df2$freq[x] <- temp_subset$per[2]
+    all_aa_df2$frac_of_aa[x] <- temp_subset$per[2] / sum(temp_subset$per)
+    }
+}
+
+all_aa_df2 <- all_aa_df2 %>% arrange(desc(freq))
+all_aa_df2$one <- factor(all_aa_df2$one, levels = rev(all_aa_df2$one))
+
+Codon_optimized_GC_balanced_graph <- ggplot() + theme_bw() + theme(panel.grid.minor.x = element_blank()) + 
+  scale_y_continuous(limits = c(0,0.046)) +
+  labs(x = "Amino acid", y = "Frequency of codon") + 
+  geom_point(data = all_aa_df2, aes(x = one, y = freq), color = "black",fill = "grey70") +
+  geom_text(data = all_aa_df2, aes(x = one, y = freq + 0.001, label = codon), hjust = 0, vjust = 0.5, angle = 0) +
+  coord_flip()
+Codon_optimized_GC_balanced_graph
+ggsave(file = "Plots/Codon_optimized_GC_balanced_graph.pdf", Codon_optimized_GC_balanced_graph, height = 5, width = 3)
+```
+```{r}
+human2a <- human2
+
+human2a$nt1 <- substr(human2a$codon,1,1)
+human2a$nt2 <- substr(human2a$codon,2,2)
+human2a$nt3 <- substr(human2a$codon,3,3)
+
+human2a$nt1 <- factor(human2a$nt1, levels = c("T","C","A","G"))
+human2a$nt2 <- factor(human2a$nt2, levels = c("T","C","A","G"))
+human2a$nt3 <- factor(human2a$nt3, levels = c("T","C","A","G"))
+
+human2a <- human2a %>% arrange(nt1, nt2, nt3)
+
+human2a$index <- rownames(human2a)
+human2a$index <- factor(human2a$index, levels = rev(seq(1,64)))
+
+Codon_chart <- ggplot() + theme_bw() + theme(panel.grid = element_blank(), axis.text = element_blank(), axis.ticks = element_blank()) + 
+  labs(x = NULL, y= NULL, title = "By position 1") +
+  scale_x_continuous(limits = c(-0.35,0.04)) +
+  geom_text(data = human2a, aes(x = -0.3, y = index, label = codon), size = 2) +
+  geom_text(data = human2a, aes(x = -0.2, y = index, label = one), size = 2) +
+  geom_text(data = human2a, aes(x = -0.1, y = index, label = three), size = 2) +
+  geom_bar(data = human2a, aes(x = per, y = index), stat = "identity", fill = "Grey50")
+Codon_chart
+ggsave(file = "Plots/Codon_chart.pdf", Codon_chart, height = 6, width = 2)
+
+human2b <- human2a %>% arrange(nt2, nt1, nt3)
+
+human2b$index <- rownames(human2b)
+human2b$index <- factor(human2b$index, levels = rev(seq(1,64)))
+
+Codon_chart2 <- ggplot() + theme_bw() + theme(panel.grid = element_blank(), axis.text = element_blank(), axis.ticks = element_blank()) + 
+  labs(x = NULL, y= NULL, title = "By position 2") +
+  scale_x_continuous(limits = c(-0.35,0.04)) +
+  geom_text(data = human2b, aes(x = -0.3, y = index, label = codon), size = 2) +
+  geom_text(data = human2b, aes(x = -0.2, y = index, label = one), size = 2) +
+  geom_text(data = human2b, aes(x = -0.1, y = index, label = three), size = 2) +
+  geom_bar(data = human2b, aes(x = per, y = index), stat = "identity", fill = "Grey50")
+Codon_chart2
+ggsave(file = "Plots/Codon_chart2.pdf", Codon_chart2, height = 6, width = 2)
+
+```
+
+
+
