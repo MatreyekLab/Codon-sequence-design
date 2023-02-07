@@ -15,8 +15,68 @@ theme_set(theme_bw())
 theme_update(legend.title = element_blank())
 ```
 
+### This is for NextSeq Kit 4
 ```{r Import data}
-samples <- read_sheet("https://docs.google.com/spreadsheets/d/1_JNV3crx33WMexKpFgCle54Ftxx1pqIQAT00_gy120U/edit?usp=sharing", sheet = "NextSeq3") 
+samples <- read_sheet("https://docs.google.com/spreadsheets/d/1_JNV3crx33WMexKpFgCle54Ftxx1pqIQAT00_gy120U/edit?usp=sharing", sheet = "NextSeq4") 
+#colnames(samples)[23] <- "concentration"
+samples$concentration <- as.numeric(as.character((samples$concentration)))
+
+ggplot() + geom_histogram(data = samples, aes(x = concentration), binwidth = 5,  fill = "grey50", color = "black") + 
+  facet_grid(rows = vars(amp_group)) + geom_vline(xintercept = c(10,40), linetype = 2, alpha = 0.4)
+
+amp3_set1 <- samples %>% filter(amp_group == 3 & concentration < 10 )
+amp3_set2 <- samples %>% filter(amp_group == 3 & concentration > 10 & concentration < 40)
+amp3_set3 <- samples %>% filter(amp_group == 3 & concentration > 40)
+```
+
+```{r Calculating mixing for Amp set 3 (ACE2 dBC samples)}
+amp3_set1$dil_ng <- 50  ### I manually adjusted this number
+amp3_set1$dil_vol <- round(amp3_set1$dil_ng / amp3_set1$concentration,2)
+amp3_set1$mix_group <- "1A"
+amp3_set1[amp3_set1$dil_vol == "Inf","dil_vol"] <- 0
+
+amp3_set2$dil_ng <- 50  ### I manually adjusted this number
+amp3_set2$dil_vol <- round(amp3_set2$dil_ng / amp3_set2$concentration,2)
+amp3_set2$mix_group <- "1B"
+
+amp3_set3$dil_ng <- 100  ### I manually adjusted this number
+amp3_set3$dil_vol <- round(amp3_set3$dil_ng / amp3_set3$concentration,2)
+amp3_set3$mix_group <- "1C"
+
+amp3_mix_table <- data.frame("sample" = c("amp3_set1","amp3_set2","amp3_set3"),
+                             "conc" = c(sum(amp3_set1$dil_ng) / sum(amp3_set1$dil_vol),
+                                        sum(amp3_set2$dil_ng) / sum(amp3_set2$dil_vol),
+                                        sum(amp3_set3$dil_ng) / sum(amp3_set3$dil_vol)),
+                             "vol" = c(sum(amp3_set1$dil_vol),
+                                       sum(amp3_set2$dil_vol),
+                                       sum(amp3_set3$dil_vol)))
+
+amp3_mix_volumes <- c(12.8,5.85,1.58).  ### I manually adjusted these to get the desired final concentrations
+amp3_mix_table$mix_vol <- amp3_mix_volumes
+total_amp3_volume <- sum(amp3_mix_table$mix_vol)
+
+paste("The total volume of the amp1 mix is:",round(total_amp3_volume,2))
+paste("The amp3 set1 final conc is:",round(amp3_mix_table$conc[1] * amp3_mix_table$mix_vol[1] / total_amp3_volume,2))
+paste("The amp3 set2 final conc is:",round(amp3_mix_table$conc[2] * amp3_mix_table$mix_vol[2] / total_amp3_volume,2))
+paste("The amp3 set3 final conc is:",round(amp3_mix_table$conc[3] * amp3_mix_table$mix_vol[3] / total_amp3_volume,2))
+
+
+columns_for_export <- c("pcr_tube_label", "mix_group", "dil_vol")
+
+amp3_for_export <- rbind(amp3_set1[,columns_for_export],amp3_set2[,columns_for_export],amp3_set3[,columns_for_export]) %>% arrange(pcr_tube_label)
+
+write.csv(file = "Nextseq4/amp3_individual_mixing.csv", amp3_for_export, row.names = FALSE)
+write.csv(file = "Nextseq4/amp3_grouped_mixing_table.csv", amp3_mix_table, row.names = FALSE)
+
+```
+
+
+
+
+
+### This was for NextSeq Kit 3
+```{r Import data}
+samples <- read_sheet("https://docs.google.com/spreadsheets/d/1_JNV3crx33WMexKpFgCle54Ftxx1pqIQAT00_gy120U/edit?usp=sharing", sheet = "NextSeq3_101022") 
 #colnames(samples)[23] <- "concentration"
 samples$concentration <- as.numeric(as.character((samples$concentration)))
 

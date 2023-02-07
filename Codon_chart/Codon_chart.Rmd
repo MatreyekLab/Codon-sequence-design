@@ -44,10 +44,10 @@ human2_aa2 <- human2 %>% group_by(one) %>% tally() %>% arrange(desc(n))
 human2_aa2$one <- factor(human2_aa2$one, levels = human2_aa2$one)
 
 Codons_per_aa_graph <- ggplot() + theme_bw() + theme(panel.grid.major.x = element_blank()) + 
-  labs(x = "Amino acid", y = "Number of codons") + 
+  labs(x = "Amino acid", y = "Number of\ncodons") + 
   geom_bar(data = human2_aa2, aes(x = one, y = n), stat = "identity", color = "black",fill = "grey70")
 Codons_per_aa_graph
-ggsave(file = "Plots/Codons_per_aa_graph.pdf", Codons_per_aa_graph, height = 3, width = 5)
+ggsave(file = "Plots/Codons_per_aa_graph.pdf", Codons_per_aa_graph, height = 1.25, width = 5)
 
 ## Make a list of highest freq codons
 
