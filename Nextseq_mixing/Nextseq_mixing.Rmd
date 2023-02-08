@@ -30,7 +30,7 @@ amp3_set3 <- samples %>% filter(amp_group == 3 & concentration > 40)
 ```
 
 ```{r Calculating mixing for Amp set 3 (ACE2 dBC samples)}
-amp3_set1$dil_ng <- 50  ### I manually adjusted this number
+amp3_set1$dil_ng <- 24  ### I manually adjusted this number
 amp3_set1$dil_vol <- round(amp3_set1$dil_ng / amp3_set1$concentration,2)
 amp3_set1$mix_group <- "1A"
 amp3_set1[amp3_set1$dil_vol == "Inf","dil_vol"] <- 0
@@ -51,7 +51,7 @@ amp3_mix_table <- data.frame("sample" = c("amp3_set1","amp3_set2","amp3_set3"),
                                        sum(amp3_set2$dil_vol),
                                        sum(amp3_set3$dil_vol)))
 
-amp3_mix_volumes <- c(12.8,5.85,1.58).  ### I manually adjusted these to get the desired final concentrations
+amp3_mix_volumes <- c(18,5.2,1.5)  ### I manually adjusted these to get the desired final concentrations
 amp3_mix_table$mix_vol <- amp3_mix_volumes
 total_amp3_volume <- sum(amp3_mix_table$mix_vol)
 
