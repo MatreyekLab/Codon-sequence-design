@@ -48,11 +48,13 @@ for index, row in df.iterrows():
 
 primer_df = pd.DataFrame(list(zip(primer, itype, primer_strand_index, primer_revcomp_index)),
                columns =["Primer_name", "type", "index_seq_fwd", "index_seq_rev"])
-#print(primer_df)
+print(primer_df)
+primer_df.to_csv("Current_index_sheet.csv", encoding='utf-8', index=False)
 
-samplegooglesheet_name = input("What is the NextSeq kit number?: ") #3
-samplegooglesheet_sheet_id = input("What is the GID of the googlesheet?: ") #937771412
+samplegooglesheet_name = input("What is the NextSeq kit number?: ")
+samplegooglesheet_sheet_id = input("What is the GID of the googlesheet?: ") #937771412 for Nextseq3, 47905542 for Nextseq4
 r2 = "https://docs.google.com/spreadsheets/export?id=1_JNV3crx33WMexKpFgCle54Ftxx1pqIQAT00_gy120U&exportFormat=csv&gid={}".format(samplegooglesheet_sheet_id)
+#https://docs.google.com/spreadsheets/export?id=1_JNV3crx33WMexKpFgCle54Ftxx1pqIQAT00_gy120U&exportFormat=csv&gid=47905542 for Nextseq4
 
 df2 = pd.read_csv(r2)
 #print(df2)
@@ -65,6 +67,7 @@ concentration_list = []
 comments = []
 
 for index, row in df2.iterrows():
+    print(row["num2"] + "_" + row["p5_primer"] + "_" + row["p7_primer"])
     sample_name.append(row["num2"])
     temp_p5_primer = row["p5_primer"]
     p5_primer.append((primer_df.loc[primer_df['Primer_name'] == temp_p5_primer])["index_seq_rev"].values[0])
