@@ -10,13 +10,28 @@ library(tidyverse)
 ```
 
 ```{r Illumina sample sheet}
-sample_sheet <- read.csv(file = "Nextseq3_Output_samplesheet.csv", header = T, stringsAsFactors = F)
+sample_sheet <- read.csv(file = "Nextseq4_Output_samplesheet.csv", header = T, stringsAsFactors = F)
 
 sample_sheet$combined_index <- paste(sample_sheet$i7.Index.Barcode,sample_sheet$i5.Index.Barcode,sep="_")
 
-table(sample_sheet$combined_index)
+unique_combo_frame <- data.frame(table(sample_sheet$combined_index)) %>% arrange(desc(Freq))
 
-length(unique(sample_sheet$combined_index))
 
-unique(sample_sheet$Sample.Name)
+
+## Bringing in the manually curated index list
+manual_sheet <- read.csv(file = "Nextseq4_manual.csv", header = T, stringsAsFactors = F)
+
+
+manual_sheet2 <- merge(manual_sheet, sample_sheet[,c("Sample.Name","i7.Index.Barcode","i5.Index.Barcode")])
+
+manual_sheet2$match <- NA
+
+for(x in 1:nrow(manual_sheet2)){
+  if(manual_sheet2$manual_i7[x] == manual_sheet2$i7.Index.Barcode[x] & manual_sheet2$manual_i5[x] == manual_sheet2$i5.Index.Barcode[x]){
+    manual_sheet2$match[x] <- 1
+  }
+}
+
+
+
 ```
