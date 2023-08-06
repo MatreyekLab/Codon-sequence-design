@@ -39,13 +39,14 @@ for index, row in df.iterrows():
     alreadyUse.append(row["index_seq_fwd"])
     primer_name.append(row["primer_name"])
     alreadyUse.append(row["index_seq_rev"])
-print(alreadyUse)
+#print(alreadyUse)
 
 ## Making the identity matrix
 
 ## Hamming distance formula
 # https://stackoverflow.com/questions/48799955/find-the-hamming-distance-between-two-dna-strings
 def distance(str1, str2):
+    print(str1+"-"+str2)
     if len(str1) != len(str2):
         raise ValueError("Strand lengths are not equal!")
     else:
