@@ -10,7 +10,7 @@ library(tidyverse)
 ```
 
 ```{r Illumina sample sheet}
-sample_sheet <- read.csv(file = "Nextseq4_Output_samplesheet.csv", header = T, stringsAsFactors = F)
+sample_sheet <- read.csv(file = "NextSeq7_output_samplesheet.csv", header = T, stringsAsFactors = F)
 
 sample_sheet$combined_index <- paste(sample_sheet$i7.Index.Barcode,sample_sheet$i5.Index.Barcode,sep="_")
 
